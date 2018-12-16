@@ -1,0 +1,15 @@
+version: '3.3'
+
+services:
+  bld:
+    image: himaoka/sls-builder:python37
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - AWS_PROFILE
+    volumes:
+      - .:/work
+      - ~/.aws:/root/.aws
+    working_dir: /work

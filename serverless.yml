@@ -1,0 +1,66 @@
+service: internal-dns
+
+provider:
+  name: aws
+  runtime: python3.7
+
+# you can overwrite defaults here
+  stage: prd
+  region: us-west-2
+
+# you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "route53:*"
+      Resource:
+        - "*"
+    - Effect: "Allow"
+      Action:
+        - "ec2:Describe*"
+      Resource:
+        - "*"
+
+# you can define service wide environment variables here
+  environment:
+    DOMAIN: example.com.
+    HOSTED_ZONE_ID: 'SET_YOURHOSTEDZONE_ID'
+
+# you can add packaging information here
+package:
+#  include:
+  exclude:
+    - node_modules/**
+    - lambda-events/**
+    - serverless.yml
+
+functions:
+  register:
+    handler: register.handle
+    memorySize: 128
+    timeout: 30
+    events:
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ec2"
+            detail-type:
+              - "EC2 Instance State-change Notification"
+            detail:
+              state:
+                - running
+
+  unregister:
+    handler: unregister.handle
+    memorySize: 128
+    timeout: 30
+    events:
+      - cloudwatchEvent:
+          event:
+            source:
+              - "aws.ec2"
+            detail-type:
+              - "EC2 Instance State-change Notification"
+            detail:
+              state:
+                - terminated
